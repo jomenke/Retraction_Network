@@ -1,55 +1,81 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from mesa.time import BaseScheduler
 from simpleLogger import SimpleLogger
 import random
 
 
-class SimpleActivation(BaseScheduler):
-    """ A simple scheduler which randomly picks only one pair of agents,
-    activating their step function."""
+if TYPE_CHECKING:
+    # To prevent cyclic dependency...
+    from agent import PopAgent
+    from model import KnowledgeModel
 
-    def __init__(self, model):
+
+class SimpleActivation(BaseScheduler):
+    """
+    A simple scheduler which randomly picks only one pair of agents,
+    activating their step function.
+    """
+    def __init__(self, model: KnowledgeModel):
+        """
+        Initialize a simple scheduler.
+        :param model: a KnowledgeModel defining the simulation entities
+        """
         super().__init__(model)
 
         # create logger
         self.logger = SimpleLogger(model)
 
-    def add(self, agent):
-        """Add an Agent object to the schedule and logger."""
+    def add(self, agent: PopAgent) -> None:
+        """
+        Add an Agent object to the schedule and logger.
+        :return: None
+        """
         self._agents[agent.unique_id] = agent
         self.logger.add(agent)
 
-    def logs(self):
-        """Get agents' belief and interaction history, respectively."""
+    def logs(self) -> tuple[dict, dict, list[set]]:
+        """
+        Wrapper for logs function in SimpleLogger class.
+        Get agents' belief and interaction history, respectively.
+        :return: a tuple containing 3 elements: belief history, interaction history, and pair history
+        """
         return self.logger.logs()
 
-    def choose(self):
-        """Chooses pair of neighboring agents for interaction."""
+    def choose(self) -> tuple[PopAgent, PopAgent]:
+        """
+        Randomly chooses a single pair of neighboring agents for interaction.
+        :return: a tuple containing 2 PopAgent instances
+        """
         # pick agent A
         keys = list(self._agents.keys())
-        keyA = random.choice(keys)
-        agentA = self.model.schedule.agents[keyA]
+        key_a = random.choice(keys)
+        agent_a = self.model.schedule.agents[key_a]
 
-        # pick pick agent B
-        keyB = random.choice(agentA.neighbors)
-        agentB = self.model.schedule.agents[keyB]
+        # pick agent B
+        key_b = random.choice(agent_a.neighbors)
+        agent_b = self.model.schedule.agents[key_b]
 
-        return agentA, agentB
+        return agent_a, agent_b
 
-    def step(self):
-        """Increments the timer for all agents, then lets one pair of agents interact."""
-        #_increment timers
+    def step(self) -> None:
+        """
+        Increments the timer for all agents, then lets one pair of agents interact.
+        :return: None
+        """
+        # increment timers for agents in KnowledgeModel
         for agent in self.agents:
             agent.tick()
 
         # choose agent pair
-        agentA, agentB = self.choose()
+        agent_a, agent_b = self.choose()
 
         # interact
-        agentA.step(agentB)
-        agentB.step(agentA)
+        agent_a.step(agent_b)
+        agent_b.step(agent_a)
 
         # log results
-        self.logger.log(agentA, agentB)
+        self.logger.log(agent_a, agent_b)
 
         # increment counters
         self.steps += 1

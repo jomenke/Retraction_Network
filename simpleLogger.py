@@ -1,23 +1,48 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    # To prevent cyclic dependency...
+    from agent import PopAgent
+    from model import KnowledgeModel
+
+
 class SimpleLogger:
     """A simple logger tracking agents' belief and interaction history."""
-
-    def __init__(self, model):
+    def __init__(self, model: KnowledgeModel):
+        """
+        Initialize a SimpleLogger.
+        :param model: a KnowledgeModel to be logged
+        """
         self.model = model
         self.belief_history = dict()  # unique_id: belief.value
         self.interaction_history = dict()  # unique_id: [(interlocutor_id, interlocutor.belief)]
         self.pair_history = []   # [{agentA, agentB}, {agentA, agentB}]
 
-    def add(self, agent):
-        """Add agent to logger"""
+    def add(self, agent: PopAgent) -> None:
+        """
+        Add agent to logger.
+        :param agent: a PopAgent instance to add to logger
+        :return: None
+        """
         self.belief_history[agent.unique_id] = [agent.belief.value]
         self.interaction_history[agent.unique_id] = []
 
-    def logs(self):
-        """Get agents' belief, interaction and pair history, respectively."""
+    def logs(self) -> tuple[dict, dict, list[set]]:
+        """
+        Get agents' belief, interaction and pair history, respectively.
+        :return: a tuple containing 3 elements: belief history, interaction history, and pair history
+        """
         return self.belief_history, self.interaction_history, self.pair_history
 
-    def log(self, agentA, agentB):
-        """Log agents to belief and interaction history"""
+    def log(self, agent_a: PopAgent, agent_b: PopAgent) -> None:
+        """
+        Log agents to belief and interaction history; agent order does not matter.
+        :param agent_a: an interacting PopAgent
+        :param agent_b: an interacting PopAgent
+        :return: None
+        """
         agents = self.model.schedule.agents
 
         # log belief history
@@ -25,11 +50,11 @@ class SimpleLogger:
             self.belief_history[agent.unique_id].append(agent.belief.value)
 
         # log interaction history
-        entryA = (agentA.unique_id, agentA.belief)
-        entryB = (agentB.unique_id, agentB.belief)
-        self.interaction_history[agentA.unique_id].append(entryB)
-        self.interaction_history[agentB.unique_id].append(entryA)
+        entry_a = (agent_a.unique_id, agent_a.belief)
+        entry_b = (agent_b.unique_id, agent_b.belief)
+        self.interaction_history[agent_a.unique_id].append(entry_b)
+        self.interaction_history[agent_b.unique_id].append(entry_a)
 
         # log pair history
-        pair = set((agentA.unique_id, agentB.unique_id))
+        pair = set((agent_a.unique_id, agent_b.unique_id))  # a set of set(id pairs)
         self.pair_history.append(pair)
