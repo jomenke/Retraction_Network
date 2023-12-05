@@ -78,6 +78,16 @@ def run_experiment(
         save=save,
         plot_sd=True
     )
+    # Final Belief Distribution
+    sim.vis_final_belief_distributions(
+        belief_dist=belief_dist,
+        data=(avg_agent, sd_agent, frac_mean, frac_sd),
+        experiment=experiment,
+        sub_experiment=sub_experiment,
+        network_name=network_name,
+        nx_params=nx_params,
+        save=save
+    )
 
 
 if __name__ == '__main__':
@@ -96,29 +106,3 @@ if __name__ == '__main__':
         experiment="Watts_Strogatz_Model",
         save=True,
     )
-
-    # How to improve previous work ->
-    # 1. Adjust idea transmission rate (100% to 94%) - double check %
-    # 2. Try to make the graph grow over the time steps
-    #       A. Maybe try iteratively getting subgraphs of subgraphs for each time point, then loop smallest to biggest to simulate growth
-    # 3. Make it a directed graph where misinformation/retracted information can only travel 1 way
-    #       A. Directed edges should only point 1 way, oldest nodes to newest nodes (direction information flows)
-
-    # Previous ->
-
-    # Graph & network structure
-    # graph = nx.complete_graph
-    # nx_params = {"n": N}
-    # network_name = "complete"    # Set network name for output file
-
-    # graph = nx.random_partition_graph
-    # nx_params = {"sizes": [50, 50], "p_in": 0.4, "p_out": 0.2}  # Graph parameters
-    # network_name = "RandomPartition"    # Set network name for output file
-
-    # sim.visFinalBeliefDistributions(belief_dist=belief_dist,
-    #                                 data=temporal_data,
-    #                                 experiment=experiment,
-    #                                 sub_experiment=sub_experiment,
-    #                                 network_name=network_name,
-    #                                 nx_params=nx_params,
-    #                                 save=save)

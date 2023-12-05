@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from mesa import Agent
 from belief import Belief, Mode
+import random
 
 
 if TYPE_CHECKING:
@@ -27,6 +28,7 @@ class PopAgent(Agent):
         self.clock = 0  # internal timer (absolute time)
         self.belief_time = 0  # time current belief has been held
         self.share_time = share_time
+        self.delay = model.delay  # time to delay before introducing retraction
 
     def tick(self) -> None:
         """
@@ -72,7 +74,13 @@ class PopAgent(Agent):
 
         # Convert self to false belief
         if self.belief == Belief.Neutral and other.belief == Belief.Fake and is_sharing_fake:
-            self.set_belief(Belief.Fake)
+            # if original info has been retracted, 5.4% chance false belief is not passed on
+            # https://direct.mit.edu/qss/article/2/4/1144/107356/Continued-use-of-retracted-papers-Temporal-trends
+            if self.clock >= self.delay:
+                if random.randint(0, 1000) > 54:
+                    self.set_belief(Belief.Fake)
+            else:
+                self.set_belief(Belief.Fake)
 
         # Convert self to retracted belief
         if self.belief == Belief.Fake and other.belief == Belief.Retracted and is_sharing_retracted:
