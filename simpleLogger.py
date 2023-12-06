@@ -4,26 +4,26 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # To prevent cyclic dependency...
-    from agent import PopAgent
-    from model import KnowledgeModel
+    from agent import Article
+    from model import AcademicLiterature
 
 
 class SimpleLogger:
     """A simple logger tracking agents' belief and interaction history."""
-    def __init__(self, model: KnowledgeModel):
+    def __init__(self, model: AcademicLiterature):
         """
         Initialize a SimpleLogger.
-        :param model: a KnowledgeModel to be logged
+        :param model: a AcademicLiterature to be logged
         """
         self.model = model
         self.belief_history = dict()  # unique_id: belief.value
         self.interaction_history = dict()  # unique_id: [(interlocutor_id, interlocutor.belief)]
         self.pair_history = []   # [{agentA, agentB}, {agentA, agentB}]
 
-    def add(self, agent: PopAgent) -> None:
+    def add(self, agent: Article) -> None:
         """
         Add agent to logger.
-        :param agent: a PopAgent instance to add to logger
+        :param agent: an Article instance to add to logger
         :return: None
         """
         self.belief_history[agent.unique_id] = [agent.belief.value]
@@ -36,11 +36,11 @@ class SimpleLogger:
         """
         return self.belief_history, self.interaction_history, self.pair_history
 
-    def log(self, agent_a: PopAgent, agent_b: PopAgent) -> None:
+    def log(self, agent_a: Article, agent_b: Article) -> None:
         """
         Log agents to belief and interaction history; agent order does not matter.
-        :param agent_a: an interacting PopAgent
-        :param agent_b: an interacting PopAgent
+        :param agent_a: an interacting Article
+        :param agent_b: an interacting Article
         :return: None
         """
         agents = self.model.schedule.agents

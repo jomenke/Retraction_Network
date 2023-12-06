@@ -7,8 +7,8 @@ import random
 
 if TYPE_CHECKING:
     # To prevent cyclic dependency...
-    from agent import PopAgent
-    from model import KnowledgeModel
+    from agent import Article
+    from model import AcademicLiterature
 
 
 class SimpleActivation(BaseScheduler):
@@ -16,17 +16,17 @@ class SimpleActivation(BaseScheduler):
     A simple scheduler which randomly picks only one pair of agents,
     activating their step function.
     """
-    def __init__(self, model: KnowledgeModel):
+    def __init__(self, model: AcademicLiterature):
         """
         Initialize a simple scheduler.
-        :param model: a KnowledgeModel defining the simulation entities
+        :param model: a AcademicLiterature defining the simulation entities
         """
         super().__init__(model)
 
         # create logger
         self.logger = SimpleLogger(model)
 
-    def add(self, agent: PopAgent) -> None:
+    def add(self, agent: Article) -> None:
         """
         Add an Agent object to the schedule and logger.
         :return: None
@@ -42,10 +42,10 @@ class SimpleActivation(BaseScheduler):
         """
         return self.logger.logs()
 
-    def choose(self) -> tuple[PopAgent, PopAgent]:
+    def choose(self) -> tuple[Article, Article]:
         """
         Randomly chooses a single pair of neighboring agents for interaction.
-        :return: a tuple containing 2 PopAgent instances
+        :return: a tuple containing 2 Article instances
         """
         # pick agent A
         keys = list(self._agents.keys())
@@ -63,7 +63,7 @@ class SimpleActivation(BaseScheduler):
         Increments the timer for all agents, then lets one pair of agents interact.
         :return: None
         """
-        # increment timers for agents in KnowledgeModel
+        # increment timers for agents in AcademicLiterature
         for agent in self.agents:
             agent.tick()
 

@@ -1,12 +1,12 @@
 from mesa import Model
-from agent import PopAgent, Belief
+from agent import Article, Belief
 from simpleScheduler import SimpleActivation
 import random
 from belief import Mode
 
 
-class KnowledgeModel(Model):
-    """A model with some static number of agents."""
+class AcademicLiterature(Model):
+    """A model with some number of agents."""
     def __init__(
             self,
             network,
@@ -17,7 +17,7 @@ class KnowledgeModel(Model):
             same_partition: bool | None = True
     ):
         """
-        Initialize a PopAgent.
+        Initialize a AcademicLiterature.
         :param network: a NetworkX graph instance
         :param sharing_mode: predefined in Mode class; integer mapped to a specific mode (e.g., default = 0)
         :param share_time: a float indicating the time limit within which new beliefs are shared; np.inf if endless
@@ -38,7 +38,7 @@ class KnowledgeModel(Model):
         # Create agents
         for i in range(self.num_agents):
             neighbors = list(self.G.neighbors(i))
-            a = PopAgent(unique_id=i, model=self, neighbors=neighbors, share_time=share_time)
+            a = Article(unique_id=i, model=self, neighbors=neighbors, share_time=share_time)
 
             if i == 0:
                 # Give Agent 0 false information

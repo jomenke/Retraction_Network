@@ -1,14 +1,14 @@
 import numpy as np
 import pandas as pd
 from belief import Mode
-from model import KnowledgeModel
+from model import AcademicLiterature
 import matplotlib.pyplot as plt
 import os
 from networkx import Graph
 
 
 class Simulator:
-    """A simulator to run multiple knowledge models."""
+    """A simulator to run multiple models."""
     def __init__(
             self,
             num_agents: int,
@@ -54,12 +54,12 @@ class Simulator:
         """
 
         # create model
-        model = KnowledgeModel(network=network,
-                               sharing_mode=self.mode,
-                               share_time=self.share_time_limit,
-                               delay=self.delay,
-                               single_source=self.single_source,
-                               same_partition=self.same_partition)
+        model = AcademicLiterature(network=network,
+                                   sharing_mode=self.mode,
+                                   share_time=self.share_time_limit,
+                                   delay=self.delay,
+                                   single_source=self.single_source,
+                                   same_partition=self.same_partition)
 
         # run model
         for t in range(self.time_steps - 1):

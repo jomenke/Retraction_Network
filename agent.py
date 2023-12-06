@@ -7,14 +7,14 @@ import random
 
 if TYPE_CHECKING:
     # To prevent cyclic dependency...
-    from model import KnowledgeModel
+    from model import AcademicLiterature
 
 
-class PopAgent(Agent):
-    """An Agent with some initial knowledge."""
-    def __init__(self, unique_id: int, model: KnowledgeModel, neighbors: list, share_time: float):
+class Article(Agent):
+    """An Agent with some initial information."""
+    def __init__(self, unique_id: int, model: AcademicLiterature, neighbors: list, share_time: float):
         """
-        Initialize a PopAgent.
+        Initialize an Article.
         :param unique_id: an integer unique to a single agent within the predefined model
         :param model: the model in which the agent will exist
         :param neighbors: a list of neighboring agents represented as nodes in a NetworkX graph
@@ -54,10 +54,10 @@ class PopAgent(Agent):
         self.belief = belief
         self.belief_time = 0
 
-    def update(self, other: PopAgent) -> None:
+    def update(self, other: Article) -> None:
         """
         Update agent's own beliefs based on its interaction with another agent.
-        :param other: another PopAgent
+        :param other: another Article
         :return: None
         """
 
@@ -86,11 +86,11 @@ class PopAgent(Agent):
         if self.belief == Belief.Fake and other.belief == Belief.Retracted and is_sharing_retracted:
             self.set_belief(Belief.Retracted)
 
-    def step(self, interlocutor: PopAgent) -> None:
+    def step(self, interlocutor: Article) -> None:
         """
-        Overloads Agent's step method. Wrapper for PopAgent's update method.
+        Overloads Agent's step method. Wrapper for Article's update method.
         Update agent's own beliefs based on its interaction with another agent.
-        :param interlocutor: another PopAgent
+        :param interlocutor: another Article
         :return: None
         """
         self.update(interlocutor)
