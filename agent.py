@@ -11,7 +11,9 @@ if TYPE_CHECKING:
 
 
 class Article(Agent):
-    """An Agent with some initial information."""
+    """
+    An Agent with some initial information.
+    """
     def __init__(self, unique_id: int, model: AcademicLiterature, neighbors: list, share_time: float):
         """
         Initialize an Article.

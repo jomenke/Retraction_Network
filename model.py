@@ -1,12 +1,43 @@
 from mesa import Model
-from agent import Article, Belief
+from agent import Article
 from simpleScheduler import SimpleActivation
 import random
-from belief import Mode
+from belief import Belief, Mode
+import networkx as nx
+import numpy as np
 
 
 class AcademicLiterature(Model):
-    """A model with some number of agents."""
+    """
+    A model with some number of agents.
+    >>> model = AcademicLiterature(nx.watts_strogatz_graph(n=100, k=8, p=0.1), Mode.Default, 1.0, 0)
+    >>> model.step()
+    >>> logs_ = model.logs()
+    >>> len(logs_)  # len(logs_) = number of classes (neutral, false, retracted)
+    3
+    >>> isinstance(logs_[0], dict)
+    True
+    >>> isinstance(logs_[2], list)
+    True
+    >>> article = Article(1, model, [], 1.0)
+    >>> article.is_sharing()
+    True
+    >>> article.tick()
+    >>> article.clock
+    1
+    >>> article.belief_time
+    1
+    >>> article.tick()
+    >>> article.is_sharing()
+    False
+    >>> article_1 = Article(2, model, [], np.inf)
+    >>> article_1.set_belief(Belief.Fake)
+    >>> article_2 = Article(2, model, [article_1], np.inf)
+    >>> article_2.set_belief(Belief.Retracted)
+    >>> article_1.update(article_2)
+    >>> article_1.belief
+    <Belief.Retracted: 2>
+    """
     def __init__(
             self,
             network,
