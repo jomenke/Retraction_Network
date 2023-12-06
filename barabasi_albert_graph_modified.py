@@ -76,6 +76,10 @@ def barabasi_albert_graph_modified(
         )
     G = initial_graph.copy()
 
+    # Add initial time-point attribute to all nodes in m0 graph
+    date_time = 0
+    G.add_nodes_from(G.nodes, date=date_time)
+
     # List of existing nodes, with nodes repeated once for each adjacent edge
     repeated_nodes = [n for n, d in G.degree() for _ in range(d)]
     # Start adding the other n - m0 nodes.
@@ -91,5 +95,9 @@ def barabasi_albert_graph_modified(
         # And the new node "source" has m edges to add to the list.
         repeated_nodes.extend([source] * m)
 
+        # Add current time-point as attribute to newly added nodes
+        # TODO: nx.get_node_attributes(G, "color", default="yellow")
+
+        date_time += 1
         source += 1
     return G
