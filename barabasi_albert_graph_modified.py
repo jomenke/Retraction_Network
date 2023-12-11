@@ -16,7 +16,6 @@ class InvalidNodeEdgeCounts(Exception):
     pass
 
 
-@profile
 def _random_subset(seq: Iterable, m: int, rng: Generator):
     """Return m unique elements from seq.
 
@@ -35,9 +34,9 @@ def _random_subset(seq: Iterable, m: int, rng: Generator):
     return targets
 
 
-def get_random_by_idx(seq: Iterable, max_idx: int):
+def get_random_by_idx(seq: Iterable, max_idx: int) -> int:
     """
-    Efficient implementation of random.Generator.choice for random, uniform selection.
+    Efficient implementation of random.Generator.choice for random, uniform selection of values in a sequence.
     :param seq: a sequence/list from which we want to randomly select a value
     :param max_idx: Index for last item in sequence
     :return: random integer selected from sequence
@@ -50,7 +49,6 @@ class skewnorm_gen_modified(rv_continuous):
     def __init__(self):
         super().__init__()
 
-    @profile
     def rvs(self, mean, std, skew, size=1, random_state=default_rng(42)):
         u0 = random_state.normal(loc=mean, scale=std, size=size)
         v = random_state.normal(loc=mean, scale=std, size=size)
@@ -61,7 +59,6 @@ class skewnorm_gen_modified(rv_continuous):
         return output
 
 
-@profile
 def barabasi_albert_graph_modified(
         n: int,
         seed: Generator | int | None = None,
@@ -89,9 +86,7 @@ def barabasi_albert_graph_modified(
        random networks", Science 286, pp 509-512, 1999.
     """
     initial_nodes = round(n*0.1)
-    initial_graph = nx.watts_strogatz_graph(n=initial_nodes, k=26, p=0.1)
-
-    G = initial_graph.copy()
+    G = nx.watts_strogatz_graph(n=initial_nodes, k=26, p=0.1)
 
     # List of existing nodes, with nodes repeated once for each adjacent edge
     repeated_nodes = [n for n, d in G.degree() for _ in range(d)]
@@ -108,7 +103,7 @@ def barabasi_albert_graph_modified(
         # Now choose # unique nodes from the existing nodes
         edge_count = refs[edge_count_idx]
         # Pick uniformly from repeated_nodes (preferential attachment)
-        targets = _random_subset(repeated_nodes, edge_count, seed)
+        targets = _random_subset(repeated_nodes, edge_count, seed)  # 2nd most time-consuming line (~22% of runtime)
         # Add edges to # nodes from the source.
         G.add_edges_from(zip([source] * edge_count, targets))
         # Add one node to the list for each new edge just created.
@@ -119,7 +114,7 @@ def barabasi_albert_graph_modified(
         edge_count_idx += 1
         source += 1
 
-    DiG = G.to_directed()
+    DiG = G.to_directed()  # most time-consuming line according to profiler (~60% of runtime)
     to_remove = [(citing, cited) for citing, cited in DiG.edges() if citing < cited]
     DiG.remove_edges_from(to_remove)
 
@@ -127,21 +122,24 @@ def barabasi_albert_graph_modified(
 
 
 if __name__ == "__main__":
-    #import timeit
-    #print(timeit.timeit('barabasi_albert_graph_modified(10000, seed=42)', globals=globals(), number=1000))
-    G = barabasi_albert_graph_modified(1000, seed=42)
-    # print(G)
-    # node_tuples = []
-    # references = []
-    # citations = []
-    # for node in list(G):
-    #     node_tuples.append((node, G.in_degree(node), G.out_degree(node)))
-    #     citations.append(G.in_degree(node))
-    #     references.append(G.out_degree(node))
-    #     # sample = [(node, in, out), (node, citations, references)]
-    # print(f"References: {np.mean(references)} +/- {np.std(references)} -> Median: {np.median(references)}")
-    # print(f"Citations: {np.mean(citations)} +/- {np.std(citations)}  -> Median: {np.median(citations)}")
-    # node_tuples.sort(reverse=True, key=lambda a: a[1])
-    # print(f"Most references (top 3): {node_tuples[:3]}")
-    # node_tuples.sort(reverse=True, key=lambda a: a[2])
-    # print(f"Most citations (top 3): {node_tuples[:3]}")
+    # Evaluate efficiency of network generation
+    # import timeit
+    # print(timeit.timeit('barabasi_albert_graph_modified(2000, seed=42)', globals=globals(), number=20))  # ~16 seconds
+
+    # Evaluate Network - Average references and citations
+    G = barabasi_albert_graph_modified(5000, seed=42)
+    print(G)
+    node_tuples = []
+    references = []
+    citations = []
+    for node in list(G):
+        node_tuples.append((node, G.in_degree(node), G.out_degree(node)))
+        citations.append(G.in_degree(node))
+        references.append(G.out_degree(node))
+        # sample = [(node, in, out), (node, citations, references)]
+    print(f"Citations: {np.mean(citations)} +/- {np.std(citations)}  -> Median: {np.median(citations)}")
+    node_tuples.sort(reverse=True, key=lambda a: a[1])
+    print(f"Most citations (top 3): {node_tuples[:3]}")
+    print(f"References: {np.mean(references)} +/- {np.std(references)} -> Median: {np.median(references)}")
+    node_tuples.sort(reverse=True, key=lambda a: a[2])
+    print(f"Most references (top 3): {node_tuples[:3]}")
