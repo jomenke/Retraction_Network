@@ -9,7 +9,6 @@ from networkx import Graph
 from collections.abc import Iterable
 from typing import Generator
 from numpy.random import default_rng
-from numba import jit
 
 
 class InvalidNodeEdgeCounts(Exception):
@@ -17,6 +16,7 @@ class InvalidNodeEdgeCounts(Exception):
     pass
 
 
+@profile
 def _random_subset(seq: Iterable, m: int, rng: Generator):
     """Return m unique elements from seq.
 
@@ -25,21 +25,32 @@ def _random_subset(seq: Iterable, m: int, rng: Generator):
 
     Note: rng is a random.Random or numpy.random.RandomState instance.
     """
-    targets = set()
     if rng is None or isinstance(rng, int):
-        rng = default_rng(rng)
-    if len(set(seq)) < m:
-        raise InvalidNodeEdgeCounts()
+        np.random.seed(rng)
+    targets = set()
+    max_idx = len(seq)
     while len(targets) < m:
-        x = rng.choice(seq)
+        x = get_random_by_idx(seq, max_idx)
         targets.add(x)
     return targets
+
+
+def get_random_by_idx(seq: Iterable, max_idx: int):
+    """
+    Efficient implementation of random.Generator.choice for random, uniform selection.
+    :param seq: a sequence/list from which we want to randomly select a value
+    :param max_idx: Index for last item in sequence
+    :return: random integer selected from sequence
+    """
+    i = np.random.randint(0, max_idx)
+    return seq[i]
 
 
 class skewnorm_gen_modified(rv_continuous):
     def __init__(self):
         super().__init__()
 
+    @profile
     def rvs(self, mean, std, skew, size=1, random_state=default_rng(42)):
         u0 = random_state.normal(loc=mean, scale=std, size=size)
         v = random_state.normal(loc=mean, scale=std, size=size)
@@ -50,6 +61,7 @@ class skewnorm_gen_modified(rv_continuous):
         return output
 
 
+@profile
 def barabasi_albert_graph_modified(
         n: int,
         seed: Generator | int | None = None,
@@ -90,6 +102,8 @@ def barabasi_albert_graph_modified(
     #  References in articles based on skew probability distribution
     edge_count_idx = 0
     refs = skewnorm_gen_modified().rvs(mean=25.7, std=18.5, skew=10, size=n-initial_nodes)
+    if len(set(repeated_nodes)) < max(refs):
+        raise InvalidNodeEdgeCounts()
     while source < n:
         # Now choose # unique nodes from the existing nodes
         edge_count = refs[edge_count_idx]
@@ -105,7 +119,7 @@ def barabasi_albert_graph_modified(
         edge_count_idx += 1
         source += 1
 
-    DiG = G.to_directed().copy()
+    DiG = G.to_directed()
     to_remove = [(citing, cited) for citing, cited in DiG.edges() if citing < cited]
     DiG.remove_edges_from(to_remove)
 
@@ -113,9 +127,9 @@ def barabasi_albert_graph_modified(
 
 
 if __name__ == "__main__":
-    import timeit
-    print(timeit.timeit('barabasi_albert_graph_modified(1000, seed=42)', globals=globals(), number=1))
-    # G = barabasi_albert_graph_modified(1000, seed=42)
+    #import timeit
+    #print(timeit.timeit('barabasi_albert_graph_modified(10000, seed=42)', globals=globals(), number=1000))
+    G = barabasi_albert_graph_modified(1000, seed=42)
     # print(G)
     # node_tuples = []
     # references = []
