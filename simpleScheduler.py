@@ -47,14 +47,17 @@ class SimpleActivation(BaseScheduler):
         Randomly chooses a single pair of neighboring agents for interaction.
         :return: a tuple containing 2 Article instances
         """
-        # pick agent A
-        keys = list(self._agents.keys())
-        key_a = random.choice(keys)
-        agent_a = self.model.schedule.agents[key_a]
+        try:
+            # pick agent A
+            keys = list(self._agents.keys())
+            key_a = random.choice(keys)
+            agent_a = self.model.schedule.agents[key_a]
 
-        # pick agent B
-        key_b = random.choice(agent_a.neighbors)
-        agent_b = self.model.schedule.agents[key_b]
+            # pick agent B
+            key_b = random.choice(agent_a.neighbors)
+            agent_b = self.model.schedule.agents[key_b]
+        except (KeyError, IndexError) as e:
+            agent_a, agent_b = None, None
 
         return agent_a, agent_b
 
@@ -70,12 +73,12 @@ class SimpleActivation(BaseScheduler):
         # choose agent pair
         agent_a, agent_b = self.choose()
 
-        # interact
-        agent_a.step(agent_b)
-        agent_b.step(agent_a)
-
-        # log results
-        self.logger.log(agent_a, agent_b)
+        if agent_a is not None:
+            # interact
+            agent_a.step(agent_b)
+            agent_b.step(agent_a)
+            # log results
+            self.logger.log(agent_a, agent_b)
 
         # increment counters
         self.steps += 1
