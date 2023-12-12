@@ -65,12 +65,14 @@ class AcademicLiterature(Model):
         self.delay = delay
         self.single_source = single_source
         self.same_partition = same_partition
+        self.misinformation = False
 
         # Create agents
         for i in range(self.num_agents):
-            neighbors = list(self.G.neighbors(i))
-            a = Article(unique_id=i, model=self, neighbors=neighbors, share_time=share_time)
+            cited_by = list(self.G.cited_by(i))
+            a = Article(unique_id=i, model=self, cited_by=cited_by, share_time=share_time)
 
+            # TODO: change this to randomly add it to well connected vs. less connected nodes
             if i == 0:
                 # Give Agent 0 false information
                 a.belief = Belief.Fake
@@ -78,10 +80,13 @@ class AcademicLiterature(Model):
             if (i == 1) and (self.delay == 0) and self.same_partition is None and self.single_source:
                 # Give Agent 1 true information
                 a.belief = Belief.Retracted
+                self.misinformation = True
+
             self.schedule.add(a)
 
         if (self.delay == 0) and (self.same_partition is not None or not self.single_source):
             self.add_retracted()
+            self.misinformation = True
 
     def add_retracted(self) -> None:
         """
@@ -112,6 +117,7 @@ class AcademicLiterature(Model):
         """
         if (self.delay > 0) and (self.schedule.time == self.delay):
             self.add_retracted()
+            self.misinformation = True
 
         self.schedule.step()
 

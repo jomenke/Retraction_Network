@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from mesa.time import BaseScheduler
 from simpleLogger import SimpleLogger
 import random
+from barabasi_albert_graph_modified import _random_subset
 
 
 if TYPE_CHECKING:
@@ -47,14 +48,18 @@ class SimpleActivation(BaseScheduler):
         Randomly chooses a single pair of neighboring agents for interaction.
         :return: a tuple containing 2 Article instances
         """
-        # pick agent A
         keys = list(self._agents.keys())
-        key_a = random.choice(keys)
-        agent_a = self.model.schedule.agents[key_a]
-
-        # pick agent B
-        key_b = random.choice(agent_a.neighbors)
-        agent_b = self.model.schedule.agents[key_b]
+        # key_a = random.choice(keys) # TODO: change to more efficient random
+        agent_a, agent_b = None, None
+        try:
+            # pick agent A
+            key_a = list(_random_subset(keys, 1))
+            agent_a = self.model.schedule.agents[key_a[0]]
+            # pick agent B
+            key_b = random.choice(agent_a.cited_by)  # TODO: change to cited_by
+            agent_b = self.model.schedule.agents[key_b]
+        except (KeyError, IndexError) as e:
+            pass
 
         return agent_a, agent_b
 
@@ -67,7 +72,14 @@ class SimpleActivation(BaseScheduler):
         for agent in self.agents:
             agent.tick()
 
-        # choose agent pair
+        # steps --
+        # check if false is there
+        # loop through agents until we hit a false article
+        # get articles to transmit based on citation network
+        cited_by = list(self._agents.keys())
+
+
+        # old ---
         agent_a, agent_b = self.choose()
 
         # interact

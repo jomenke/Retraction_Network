@@ -14,19 +14,19 @@ class Article(Agent):
     """
     An Agent with some initial information.
     """
-    def __init__(self, unique_id: int, model: AcademicLiterature, neighbors: list, share_time: float):
+    def __init__(self, unique_id: int, model: AcademicLiterature, cited_by: list, share_time: float):
         """
         Initialize an Article.
         :param unique_id: an integer unique to a single agent within the predefined model
         :param model: the model in which the agent will exist
-        :param neighbors: a list of neighboring agents represented as nodes in a NetworkX graph
+        :param cited_by: a list of neighboring agents represented as nodes in a NetworkX graph
         :param share_time: a float indicating the time limit within which new beliefs are shared; np.inf if endless
         """
         super().__init__(unique_id, model)
 
         # Default params
         self.belief = Belief.Neutral
-        self.neighbors = neighbors
+        self.cited_by = cited_by
         self.clock = 0  # internal timer (absolute time)
         self.belief_time = 0  # time current belief has been held
         self.share_time = share_time

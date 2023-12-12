@@ -5,7 +5,7 @@ A custom network adapted from NetworkX's implementation of the Barabási–Alber
 import numpy as np
 from scipy.stats import rv_continuous
 import networkx as nx
-from networkx import Graph
+from networkx import Graph, DiGraph
 from collections.abc import Iterable
 from typing import Generator
 from numpy.random import default_rng
@@ -16,7 +16,7 @@ class InvalidNodeEdgeCounts(Exception):
     pass
 
 
-def _random_subset(seq: Iterable, m: int, rng: Generator):
+def _random_subset(seq: Iterable, m: int, rng: Generator = None) -> set:
     """Return m unique elements from seq.
 
     This differs from random.sample which can return repeated
@@ -62,7 +62,7 @@ class skewnorm_gen_modified(rv_continuous):
 def barabasi_albert_graph_modified(
         n: int,
         seed: Generator | int | None = None,
-):
+) -> DiGraph:
     """Returns a small world network graph (10% of nodes), expanded using Barabási–Albert preferential attachment
 
     A directed graph of $n$ nodes is grown by attaching new nodes each with $m$
@@ -115,7 +115,7 @@ def barabasi_albert_graph_modified(
         source += 1
 
     DiG = G.to_directed()  # most time-consuming line according to profiler (~60% of runtime)
-    to_remove = [(citing, cited) for citing, cited in DiG.edges() if citing < cited]
+    to_remove = [(citing, cited) for citing, cited in DiG.edges() if citing > cited]
     DiG.remove_edges_from(to_remove)
 
     return DiG
@@ -134,12 +134,12 @@ if __name__ == "__main__":
     citations = []
     for node in list(G):
         node_tuples.append((node, G.in_degree(node), G.out_degree(node)))
-        citations.append(G.in_degree(node))
-        references.append(G.out_degree(node))
+        references.append(G.in_degree(node))
+        citations.append(G.out_degree(node))
         # sample = [(node, in, out), (node, citations, references)]
-    print(f"Citations: {np.mean(citations)} +/- {np.std(citations)}  -> Median: {np.median(citations)}")
-    node_tuples.sort(reverse=True, key=lambda a: a[1])
-    print(f"Most citations (top 3): {node_tuples[:3]}")
     print(f"References: {np.mean(references)} +/- {np.std(references)} -> Median: {np.median(references)}")
-    node_tuples.sort(reverse=True, key=lambda a: a[2])
+    node_tuples.sort(reverse=True, key=lambda a: a[1])
     print(f"Most references (top 3): {node_tuples[:3]}")
+    print(f"Citations: {np.mean(citations)} +/- {np.std(citations)}  -> Median: {np.median(citations)}")
+    node_tuples.sort(reverse=True, key=lambda a: a[2])
+    print(f"Most citations (top 3): {node_tuples[:3]}")

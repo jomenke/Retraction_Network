@@ -20,7 +20,8 @@ class Simulator:
             share_time_limit: float,
             delay: int,
             single_source: bool,
-            same_partition: bool | None
+            same_partition: bool | None,
+            custom_network: bool
     ):
         """
         Initialize a Simulator class.
@@ -34,6 +35,7 @@ class Simulator:
         :param delay: Time delay before retracted belief is added to model; set 0 for immediate addition
         :param single_source: boolean; retracted source same as false belief source (False only applied if delay > 0)
         :param same_partition: retracted and fake source in same partition if random_partition_graph; when None, random
+        :param custom_network: boolean - if True, utilize custom network
         """
         self.num_agents = num_agents
         self.num_sims = num_sims
@@ -45,6 +47,7 @@ class Simulator:
         self.single_source = single_source
         self.same_partition = same_partition
         self.share_time_limit = share_time_limit
+        self.custom_network = custom_network
 
     def run_model(self, network: Graph) -> tuple[dict, dict, list[set]]:
         """
@@ -77,7 +80,7 @@ class Simulator:
     ) -> tuple:
         """
         Run model for number of simulations and return aggregate logs.
-        :param save: boolean; if True, saves plots to directory
+        :param save: boolean - if True, saves plots to directory
         :param experiment: name of output directory
         :param sub_experiment: detailed name of folder in output directory
         :param network_name: name of graph network type
