@@ -13,6 +13,6 @@ Prior work by LaCroix and colleagues modeled researchers within social networks,
 Overall, this work aims to adapt their model from researchers within social networks to research articles within citation networks. Currently, a custom network has been implemented, but adjustments are still in progress for incorporating this within the simulation. 
 
 ## Instructions
-To perform simulations, adjust the parameters as necessary and run the main.py script. 
+To perform simulations, adjust the run_experiment parameters as necessary and run the main.py script. 
 
 While the previously implemented networks should still function within the simulation, the simulation involving the custom network is still being developed. The networks characteristics (i.e., average number of references and citations for each article) can be seen by running the barabasi_albert_graph_modified.py file.
